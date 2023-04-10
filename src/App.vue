@@ -94,7 +94,6 @@
           baseURL: '/api',
           timeout: 1000,
           headers: {
-            'X-MAL-CLIENT-ID': '',// TODO turn this into .env var
             'Content-Type': 'application/json',
           },
           responseType: 'json',
