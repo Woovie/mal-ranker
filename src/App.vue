@@ -1,8 +1,7 @@
 <script setup>
   import Tier from './components/Tier.vue';
-  import TierLabel from './components/TierLabel.vue';
-  import TierDropzone from './components/TierDropzone.vue';
-  import axios from 'axios';
+  import Search from './components/Search.vue';
+  import AnimeCard from './components/AnimeCard.vue';
 </script>
 
 <template>
@@ -15,72 +14,15 @@
     </div>
   </div>
   <div id="tierContainer">
-    <Tier>
-      <TierLabel bgcol="hsl(120, 100%, 80%)" tier="S">
-
-      </TierLabel>
-      <TierDropzone>
-
-      </TierDropzone>
-    </Tier>
-    <Tier>
-      <TierLabel bgcol="hsl(100, 100%, 80%)" tier="A">
-
-      </TierLabel>
-      <TierDropzone>
-        
-      </TierDropzone>
-    </Tier>
-    <Tier>
-      <TierLabel bgcol="hsl(80, 100%, 80%)" tier="B">
-
-      </TierLabel>
-      <TierDropzone>
-        
-      </TierDropzone>
-    </Tier>
-    <Tier>
-      <TierLabel bgcol="hsl(60, 100%, 80%)" tier="C">
-
-      </TierLabel>
-      <TierDropzone>
-        
-      </TierDropzone>
-    </Tier>
-    <Tier>
-      <TierLabel bgcol="hsl(40, 100%, 80%)" tier="D">
-
-      </TierLabel>
-      <TierDropzone>
-        
-      </TierDropzone>
-    </Tier>
-    <Tier>
-      <TierLabel bgcol="hsl(20, 100%, 80%)" tier="F">
-
-     </TierLabel>
-     <TierDropzone>
-        
-      </TierDropzone>
-    </Tier>
-    <Tier>
-      <TierLabel bgcol="hsl(20, 0%, 80%)" tier="Unranked">
-
-     </TierLabel>
-     <TierDropzone>
-        
-      </TierDropzone>
-    </Tier>
+    <Tier bgcol="hsl(120, 100%, 80%)" tier="S"></Tier>
+    <Tier bgcol="hsl(100, 100%, 80%)" tier="A"></Tier>
+    <Tier bgcol="hsl(80, 100%, 80%)" tier="B"></Tier>
+    <Tier bgcol="hsl(60, 100%, 80%)" tier="C"></Tier>
+    <Tier bgcol="hsl(40, 100%, 80%)" tier="D"></Tier>
+    <Tier bgcol="hsl(20, 100%, 80%)" tier="F"></Tier>
+    <Tier bgcol="hsl(20, 0%, 80%)" tier="Unranked"></Tier>
   </div>
-  <div v-if="isShowingSearch" @click="hideSearch" id="searchBoxHolder">
-    <div @click.stop id="searchBox">
-      <p>Click background to cancel</p>
-      <input @input="searchForAnime" aria-label="search" v-model="searchString" type="text" placeholder="Search for an anime" id="searchInput" />
-      <div id="searchResults">
-
-      </div>
-    </div>
-  </div>
+  <Search v-if="isShowingSearch" @chose-anime="choseAnime" @hide-search="hideSearch"></Search>
 </template>
 
 <script>
@@ -88,63 +30,40 @@
     data() {
       return {
         isShowingSearch: false,
-        animes: [],
-        searchString: '',
-        axiosInstance: axios.create({
-          baseURL: '/api',
-          timeout: 1000,
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          responseType: 'json',
-          method: 'get',
-        })
+        animeRanks: {
+          "S": [],
+          "A": [],
+          "B": [],
+          "C": [],
+          "D": [],
+          "F": [],
+          "U": []
+        },
+
       }
     },
     methods: {
-      showSearch(event) {
+      showSearch() {
         if (!this.isShowingSearch) {
           this.isShowingSearch = true;
         }
       },
-      hideSearch(event) {
+      hideSearch() {
         if (this.isShowingSearch) {
-          this.searchString = '';
           this.isShowingSearch = false;
         }
       },
-      async searchForAnime() {
-        if (this.searchString.length >= 3) {
-          const results = await this.axiosInstance.get('/anime', {
-            params: {
-              q: this.searchString,
-              limit: 10,
-            }
-          });
-          console.log(results);
-          const responseHolder = document.querySelector('#searchResults');
-          while (responseHolder.firstChild) {
-            responseHolder.removeChild(responseHolder.firstChild);
-          }
-          for (const node of results.data.data) {
-            const anime = node.node;
-            const animeContainer = document.createElement('div');
-            responseHolder.appendChild(animeContainer);
-            animeContainer.classList.add('animeListing');
+      choseAnime(animeID) {
 
-            const imageContainer = document.createElement('img');
-            animeContainer.appendChild(imageContainer);
-            imageContainer.classList.add('animeImage');
-            imageContainer.src = anime.main_picture.medium;
+      },
+      moveAnime() {
 
-            const animeTitle = document.createElement('p');
-            animeContainer.appendChild(animeTitle);
-            animeTitle.innerText = anime.title;
-          }
-        } else {
-          const responseHolder = document.querySelector('#searchResults');
-          while (responseHolder.firstChild) {
-            responseHolder.removeChild(responseHolder.firstChild);
+      },
+      updateDisplayed() {
+        for (let rank in this.animeRanks) {
+          const animes = this.animeRanks[rank];
+          for (let animeID of animes) {
+
           }
         }
       }
@@ -206,61 +125,5 @@ body {
   display: flex;
 }
 
-#searchBoxHolder {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: hsla(0, 0%, 0%, 0.3);
-}
 
-#searchBox {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-  width: 50%;
-}
-
-#searchBox p {
-  font-size: 0.75rem;
-}
-
-#searchInput {
-  font-size: 1.25rem;
-  border-radius: 0.25rem;
-  background-color: black;
-  color: white;
-  border: solid white 1px;
-  padding: 0.2rem;
-  width: 100%;
-}
-
-#searchResults {
-  max-height: 16rem;
-  overflow-y: scroll;
-  width: 100%;
-}
-
-.animeListing {
-  width: 100%;
-  min-height: 2rem;
-  max-height: 8rem;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-}
-
-.animeListing p {
-  overflow-wrap: break-word;
-  max-height: 8rem;
-  overflow: hidden;
-}
-
-.animeImage {
-max-height: 8rem;
-width: 4rem;
-}
 </style>
