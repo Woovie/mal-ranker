@@ -16,6 +16,7 @@ export default defineConfig(({command, mode}) => {
           configure: (proxy, options) => {
             proxy.on('proxyReq', (proxyReq, req, res) => {
               proxyReq.setHeader('X-MAL-CLIENT-ID', env.MAL_CLIENT_ID);
+              proxyReq.setHeader('Content-Type', 'application/json');
             })
           }
         }
