@@ -83,6 +83,9 @@
         }
         this.debouncedSearch();
       };
+    },
+    mounted() {
+      document.querySelector('#searchInput').focus();
     }
   }
 </script>
