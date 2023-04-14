@@ -1,10 +1,12 @@
 <template>
-  <div class="imageHolder">
-    <img class="listingImage" :alt="altTagDesc" :src="imageURL" />
-  </div>
-  <div class="descriptionHolder">
-    <div class="listingTitle">{{ this.calculatedTitle.length > 0 ? this.calculatedTitle : this.title }}</div>
-    <div class="listingDescription">{{ this.description }}</div>
+  <div @click="$emit('chose-anime', {id: this.id, preferredTitle: this.calculatedTitle, fallbackTitle: this.title, image: this.imageURL})" class="searchListing">
+    <div class="imageHolder">
+      <img class="listingImage" :alt="altTagDesc" :src="imageURL" />
+    </div>
+    <div class="descriptionHolder">
+      <div class="listingTitle">{{ this.calculatedTitle.length > 0 ? this.calculatedTitle : this.title }}</div>
+      <div class="listingDescription">{{ this.description }}</div>
+    </div>
   </div>
 </template>
 
@@ -35,6 +37,14 @@ export default {
       calculatedTitle: '',
     }
   },
+  props: [
+    'id',
+    'title',
+    'imageURL',
+  ],
+  emits: [
+    'chose-anime'
+  ],
   created() {
     this.getDetails();
   },
@@ -56,7 +66,6 @@ export default {
     titleCalc() {
       let finalTitle = `${this.title} (${this.mediaType})`;
       if (this.resultObject) {
-        console.log('alternativeTitles' in this && 'en' in this.alternativeTitles && this.alternativeTitles.en.length > 0);
         if ('alternativeTitles' in this && 'en' in this.alternativeTitles && this.alternativeTitles.en.length > 0) {// "title":"Tensei shitara Slime Datta Ken 3rd Season", "en":"That Time I Got Reincarnated as a Slime Season 3"
           finalTitle = `${this.alternativeTitles.en} (${this.mediaType})`;
         }
@@ -74,16 +83,14 @@ export default {
       this.calculatedTitle = finalTitle;
     }
   },
-  props: [
-    'id',
-    'title',
-    'imageURL',
-  ],
   computed: {
     altTagDesc() {
       return `The cover art for ${this.title}`
     }
-  }
+  },
+  mounted() {
+
+  },
 }
 </script>
 
@@ -93,20 +100,6 @@ export default {
   display: flex;
   flex-direction: row;
   justify-content: center;
-  padding-bottom: 0.25rem;
-  padding-top: 0.25rem;
-}
-
-.searchListing:nth-child(odd) {
-  background-color: hsl(0, 0%, 100%, 0.1);
-}
-
-.searchListing:nth-child(even) {
-  background-color: hsl(0, 0%, 100%, 0.2);
-}
-
-.searchListing:hover {
-  background-color: hsl(0, 0%, 100%, 0.3);
 }
 
 .listingImage {

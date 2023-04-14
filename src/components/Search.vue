@@ -11,7 +11,7 @@
 </template>
 
 <script>
-  import { createApp } from 'vue';
+  import { createApp, h } from 'vue';
   import axios from 'axios';
   import { debounce } from '../debounce.js';
   import SearchResult from './SearchResult.vue';
@@ -44,27 +44,31 @@
 
           for (const node of results.data.data) {
             const anime = node.node;
-            const instance = createApp(SearchResult, {
+
+            const modifiedSearchResult = h(
+              SearchResult,
+              {
+                onChoseAnime: (animeDetails) => this.selectAnime(animeDetails),
+              }
+            );
+
+            const instance = createApp(modifiedSearchResult, {
               id: anime.id,
               title: anime.title,
               imageURL: anime.main_picture.large,
             });
+
             const container = document.createElement('div');
-            container.classList.add('searchListing');
+            container.classList.add('searchListingContainer');
+
             instance.mount(container);
+
             responseHolder.appendChild(container);
           }
         }
       },
-      selectAnime(event) {
-        let animeListing = event.target;
-        if (animeListing.classList.contains('animeListing')) {
-        } else if (animeListing.parentElement.classList.contains('animeListing')) {
-          animeListing = event.target.parentElement;
-        } else {
-          animeListing = event.target.parentElement.parentElement;
-        }
-        this.$emit('choseAnime', animeListing.animeID);
+      selectAnime(animeDetails) {
+        this.$emit('choseAnime', animeDetails);
         this.$emit('hideSearch');
       },
     },
@@ -118,5 +122,23 @@
   overflow-y: scroll;
   overflow-x: clip;
   width: 100%;
+}
+
+.searchListingContainer{
+  height: 8rem;
+  padding-bottom: 0.25rem;
+  padding-top: 0.25rem;
+}
+
+.searchListingContainer:nth-child(odd) {
+  background-color: hsl(0, 0%, 100%, 0.1);
+}
+
+.searchListingContainer:nth-child(even) {
+  background-color: hsl(0, 0%, 100%, 0.2);
+}
+
+.searchListingContainer:hover {
+  background-color: hsl(0, 0%, 100%, 0.3);
 }
 </style>

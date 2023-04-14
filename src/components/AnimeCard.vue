@@ -1,31 +1,13 @@
-<script setup>
-import axios from 'axios';
-</script>
-
 <template>
-  <div>
-    <img :alt="altString" :src="url" />
-  </div>
+    <img class="tierCard" :alt="altString" :src="url" />
 </template>
 
 <script>
   export default {
-    data() {
-      return {
-        title: '',
-        url: ''
-      };
-    },
     props: [
-      'animeID',
+      'title',
+      'url'
     ],
-    created() {
-      const results = axios.get(`/anime/${this.animeID}`, {
-        timeout: 2000,
-        responseType: 'json',
-      });
-      console.log(results);
-    },
     computed: {
       altString() {
         return`Picture of ${this.title}`;
@@ -35,5 +17,8 @@ import axios from 'axios';
 </script>
 
 <style>
-
+.tierCard {
+  max-height: 100%;
+  object-fit: cover;
+}
 </style>

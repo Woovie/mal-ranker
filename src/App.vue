@@ -2,6 +2,7 @@
   import Tier from './components/Tier.vue';
   import Search from './components/Search.vue';
   import AnimeCard from './components/AnimeCard.vue';
+import { createApp } from 'vue';
 </script>
 
 <template>
@@ -31,14 +32,31 @@
       return {
         isShowingSearch: false,
         animeRanks: {
-          "S": [],
-          "A": [],
-          "B": [],
-          "C": [],
-          "D": [],
-          "F": [],
-          "U": []
+          S: {
+            storage: [],
+          },
+          A: {
+            storage: [],
+          },
+          B: {
+            storage: [],
+          },
+          C: {
+            storage: [],
+          },
+          D: {
+            storage: [],
+          },
+          F: {
+            storage: [],
+          },
+          U: {
+            storage: [],
+          },
         },
+        anime: {
+
+        }
 
       }
     },
@@ -53,21 +71,27 @@
           this.isShowingSearch = false;
         }
       },
-      choseAnime(animeID) {
-
+      choseAnime(animeDetails) {
+        this.animeRanks.U.storage.push(animeDetails.id);
+        this.anime[animeDetails.id] = animeDetails;
+        this.createCard(animeDetails);
       },
       moveAnime() {
 
       },
-      updateDisplayed() {
-        for (let rank in this.animeRanks) {
-          const animes = this.animeRanks[rank];
-          for (let animeID of animes) {
+      createCard(animeDetails) {
+        const instance = createApp(AnimeCard, {
+          title: animeDetails.preferredTitle.length > 0 ? animeDetails.preferredTitle : animeDetails.fallbackTitle,
+          url: animeDetails.image,
+        });
 
-          }
-        }
+        const container = document.createElement('div');
+        container.classList.add('animeCardHolder');
+
+        instance.mount(container);
+        document.querySelector('#Unranked').children[1].appendChild(container);
       }
-    }
+    },
   }
 </script>
 
@@ -112,12 +136,12 @@ body {
   flex-grow: 1;
 }
 
-#tierContainer :last-child {
+.tier:last-child {
   flex-grow: 1;
   display: flex;
 }
 
-#tierContainer :last-child, .tierLabel {
+.tier:last-child, .tierLabel {
   flex-grow: 1;
 }
 
@@ -125,5 +149,25 @@ body {
   display: flex;
 }
 
+.animeCardHolder {
+  width: 4rem;
+  height: 6rem;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 0.05rem;
+  margin-top: 0.25rem;
+  margin-bottom: 0.25rem;
+  margin-left: 0.25rem;
+  /* border: 1px white solid; */
+  font-size: 40px;
+  transition: box-shadow 0.15s ease-in-out;
+  transition: transform .2s;
+}
 
+.animeCardHolder:hover{
+  box-shadow: hsla(40, 86%, 43%, 0.5) 0px 0.0625em 0.0625em, hsla(40, 86%, 43%, 0.5) 0px 0.125em 0.5em, hsla(40, 86%, 43%, 0.5) 0px 0px 0px 1px inset;
+  transform: scale(1.5);
+}
 </style>

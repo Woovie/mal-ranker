@@ -1,6 +1,6 @@
 <template>
-  <div class="tier">
-    <div class="tierLabel" :id="tier" :style="cssProps">
+  <div :id="tier" class="tier">
+    <div class="tierLabel" :style="cssProps">
       {{ tier }}
     </div>
     <div class="tierDropzone"></div>
@@ -43,5 +43,10 @@
     display: flex;
     min-height: 4rem;
     max-width: 4rem;
+  }
+
+  .tierDropzone{
+    display: flex;
+    flex-direction: row;
   }
 </style>
