@@ -2,7 +2,10 @@
   import Tier from './components/Tier.vue';
   import Search from './components/Search.vue';
   import AnimeCard from './components/AnimeCard.vue';
-import { createApp } from 'vue';
+  import { createApp } from 'vue';
+  import Base64url from 'crypto-js/enc-base64url';
+  import Utf8 from 'crypto-js/enc-utf8';
+  import axios from 'axios';
 </script>
 
 <template>
@@ -15,49 +18,100 @@ import { createApp } from 'vue';
     </div>
   </div>
   <div id="tierContainer">
-    <Tier bgcol="hsl(120, 100%, 80%)" tier="S"></Tier>
-    <Tier bgcol="hsl(100, 100%, 80%)" tier="A"></Tier>
-    <Tier bgcol="hsl(80, 100%, 80%)" tier="B"></Tier>
-    <Tier bgcol="hsl(60, 100%, 80%)" tier="C"></Tier>
-    <Tier bgcol="hsl(40, 100%, 80%)" tier="D"></Tier>
-    <Tier bgcol="hsl(20, 100%, 80%)" tier="F"></Tier>
-    <Tier bgcol="hsl(20, 0%, 80%)" tier="Unranked"></Tier>
+    <Tier @dropped-anime="droppedAnime" bgcol="hsl(120, 100%, 80%)" tier="S"></Tier>
+    <Tier @dropped-anime="droppedAnime" bgcol="hsl(100, 100%, 80%)" tier="A"></Tier>
+    <Tier @dropped-anime="droppedAnime" bgcol="hsl(80, 100%, 80%)" tier="B"></Tier>
+    <Tier @dropped-anime="droppedAnime" bgcol="hsl(60, 100%, 80%)" tier="C"></Tier>
+    <Tier @dropped-anime="droppedAnime" bgcol="hsl(40, 100%, 80%)" tier="D"></Tier>
+    <Tier @dropped-anime="droppedAnime" bgcol="hsl(20, 100%, 80%)" tier="F"></Tier>
+    <Tier @dropped-anime="droppedAnime" bgcol="hsl(20, 0%, 80%)" tier="Unranked"></Tier>
   </div>
   <Search v-if="isShowingSearch" @chose-anime="choseAnime" @hide-search="hideSearch"></Search>
 </template>
 
 <script>
   export default {
+    async mounted() {
+      const currentURL = new URL(window.location.href);
+      const searchParams = currentURL.searchParams;
+      this.animeRanks = JSON.parse(Utf8.stringify(Base64url.parse(searchParams.get('tierList'))));
+
+      for (let rank in this.animeRanks) {
+        if (rank === 'all') continue;
+
+        for (let animeID of this.animeRanks[rank]) {
+          const fullObject = await this.axiosInstance.get(`/anime/${animeID}`, {
+            params: {
+              fields: 'alternative_titles,end_date,genres,main_picture,media_type,num_episodes,pictures,start_date,studios,synopsis,title',
+            }
+          });
+          const animeDetails = fullObject.data;
+
+          console.log(animeDetails);
+
+          this.mediaType = this.mediaTypes[animeDetails.media_type] ? this.mediaTypes[animeDetails.media_type] : `!!!!! ${animeDetails.media_type}`;
+
+          let title = `${animeDetails.title} (${animeDetails.mediaType})`;
+          if ('alternativeTitles' in animeDetails && 'en' in animeDetails.alternativeTitles && animeDetails.alternativeTitles.en.length > 0) {
+            title = `${animeDetails.alternativeTitles.en} (${animeDetails.mediaType})`;
+          }
+          if ('start' in animeDetails) {
+            let start = animeDetails.start.slice(0, 4);
+            let end = '';
+            if (animeDetails.end) {
+              end = animeDetails.end.slice(0, 4);
+            }
+            if (start === end) {
+              title += ` ${start}`;
+            } else {
+              title += ` ${start}—${end}`;
+            }
+          }
+
+          console.log(animeDetails.main_picture.large);
+
+          const card = this.createCard({
+            id: animeDetails.id,
+            preferredTitle: title,
+            fallbackTitle: animeDetails.title,
+            image: animeDetails.main_picture.large,
+          });
+
+          document.querySelector(`#${rank}`).children[1].appendChild(card);
+        }
+      }
+    },
     data() {
       return {
+        mediaTypes: {
+          'ona': 'ONA',
+          'ova': 'OVA',
+          'movie': 'Movie',
+          'tv': 'TV',
+          'special': 'Special',
+          'music': 'Music',
+        },
         isShowingSearch: false,
         animeRanks: {
-          S: {
-            storage: [],
-          },
-          A: {
-            storage: [],
-          },
-          B: {
-            storage: [],
-          },
-          C: {
-            storage: [],
-          },
-          D: {
-            storage: [],
-          },
-          F: {
-            storage: [],
-          },
-          U: {
-            storage: [],
-          },
+          S: [],
+          A: [],
+          B: [],
+          C: [],
+          D: [],
+          F: [],
+          U: [],
+          all: [],
         },
         anime: {
 
-        }
-
+        },
+        axiosInstance: axios.create({
+          baseURL: '/api',
+          timeout: 60000,
+          responseType: 'json',
+          method: 'get',
+        }),
+        mediaType: '',
       }
     },
     methods: {
@@ -72,24 +126,63 @@ import { createApp } from 'vue';
         }
       },
       choseAnime(animeDetails) {
-        this.animeRanks.U.storage.push(animeDetails.id);
-        this.anime[animeDetails.id] = animeDetails;
-        this.createCard(animeDetails);
-      },
-      moveAnime() {
-
+        if(!this.animeRanks.all.includes(animeDetails.id)) {
+          this.animeRanks.U.push(animeDetails.id);
+          this.animeRanks.all.push(animeDetails.id);
+          this.anime[animeDetails.id] = animeDetails;
+          const animeCard = this.createCard(animeDetails);
+          document.querySelector('#Unranked').children[1].appendChild(animeCard);
+        } else {
+          console.log("Error: anime already chosen");
+        }
       },
       createCard(animeDetails) {
         const instance = createApp(AnimeCard, {
+          id: animeDetails.id,
           title: animeDetails.preferredTitle.length > 0 ? animeDetails.preferredTitle : animeDetails.fallbackTitle,
           url: animeDetails.image,
         });
 
         const container = document.createElement('div');
         container.classList.add('animeCardHolder');
+        container.id = `card${animeDetails.id}`;
 
         instance.mount(container);
-        document.querySelector('#Unranked').children[1].appendChild(container);
+        return container;
+      },
+      droppedAnime(id, preferredTitle, image, tier) {
+        let foundRank = null;
+        for (let rank in this.animeRanks) {// this.animeRanks[rank]
+          if (rank === 'all') continue;
+          if (this.animeRanks[rank].includes(id)) {
+            this.animeRanks[rank].splice(this.animeRanks[rank].indexOf(id), 1);
+            this.animeRanks[tier].push(id);
+          }
+        }
+        console.log(JSON.stringify(this.animeRanks));
+        console.log();
+        const card = this.createCard({
+          id,
+          preferredTitle,
+          image,
+        });
+        document.querySelector(`#card${id}`).remove();
+        document.querySelector(`#${tier}`).children[1].appendChild(card);
+
+        const currentURL = new URL(window.location.href);
+        const searchParams = currentURL.searchParams;
+
+        searchParams.set(
+          'tierList',
+          Base64url.stringify(
+            Utf8.parse(
+              JSON.stringify(this.animeRanks)
+            )
+          )
+        );
+
+        currentURL.search = searchParams.toString();
+        window.history.pushState({}, '', currentURL.toString());
       }
     },
   }

@@ -1,5 +1,5 @@
 <template>
-  <div @click="$emit('chose-anime', {id: this.id, preferredTitle: this.calculatedTitle, fallbackTitle: this.title, image: this.imageURL})" class="searchListing">
+  <div @click="$emit('chose-anime', {id: this.id.toString(), preferredTitle: this.calculatedTitle, fallbackTitle: this.title, image: this.imageURL})" class="searchListing">
     <div class="imageHolder">
       <img class="listingImage" :alt="altTagDesc" :src="imageURL" />
     </div>
