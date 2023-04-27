@@ -25,10 +25,8 @@
     methods: {
       droppedOn(event) {
         if (event.target.classList.contains('tierDropzone')) {
-          const id = event.dataTransfer.getData("id");
-          const title = event.dataTransfer.getData("title");
-          const url = event.dataTransfer.getData("url");
-          this.$emit('droppedAnime', id, title, url, event.target.parentElement.id);
+          const animeDetails = event.dataTransfer.getData('animeDetails');
+          this.$emit('droppedAnime', JSON.parse(animeDetails), event.target.parentElement.id);
         }
       },
       draggedOver(event) {
@@ -50,10 +48,6 @@
 </style>
 
 <style scoped>
-  .tier {
-    display: flex;
-    flex-direction: row;
-  }
   .tierLabel {
     background-color: var(--bg-color);
     font-weight: 500;
@@ -63,7 +57,7 @@
     min-width: 4rem;
     justify-content: center;
     align-items: center;
-    min-height: 4rem;
+    min-height: 6rem;
     max-width: 4rem;
     flex-shrink: 1;
   }
