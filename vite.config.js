@@ -3,8 +3,7 @@ import vue from '@vitejs/plugin-vue'
 
 // https://vitejs.dev/config/
 export default defineConfig(({command, mode}) => {
-  // const env = loadEnv(mode)
-  const env = loadEnv(mode, process.cwd(), '');
+  process.env = {...process.env, ...loadEnv(mode, process.cwd(), '')};
   return {
     plugins: [vue()],
     server: {
@@ -15,7 +14,7 @@ export default defineConfig(({command, mode}) => {
           rewrite: (path) => path.replace(/^\/api/, ''),
           configure: (proxy, options) => {
             proxy.on('proxyReq', (proxyReq, req, res) => {
-              proxyReq.setHeader('X-MAL-CLIENT-ID', env.MAL_CLIENT_ID);
+              proxyReq.setHeader('X-MAL-CLIENT-ID', process.env.MAL_CLIENT_ID);
               proxyReq.setHeader('Content-Type', 'application/json');
             })
           }
