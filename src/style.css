@@ -8,15 +8,9 @@ html, body, #app {
   height: 100%;
 }
 
-#app {
-  display: flex;
-  align-content: stretch;
-  flex-direction: column;
-  column-count: 1;
-}
-
 body {
   margin: 0 auto;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 /* Default font size */
@@ -34,21 +28,21 @@ html {
 /* Media query for medium screens */
 @media only screen and (min-width: 481px) and (max-width: 768px) {
   html {
-    font-size: 16px;
+    font-size: 18px;
   }
 }
 
 /* Media query for larger screens */
 @media only screen and (min-width: 769px) and (max-width: 1024px) {
   html {
-    font-size: 24px;
+    font-size: 22px;
   }
 }
 
 /* Media query for extra-large screens */
 @media only screen and (min-width: 1025px) and (max-width: 2047px) {
   html {
-    font-size: 32px;
+    font-size: 26px;
   }
 }
 

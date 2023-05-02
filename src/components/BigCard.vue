@@ -44,7 +44,7 @@ export default {
 
 <style>
 .searchListing {
-  height: 8rem;
+  height: 10rem;
   display: flex;
   flex-direction: row;
   justify-content: center;
@@ -68,6 +68,8 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
+  margin-left: 0.25rem;
+  margin-right: 0.25rem;
 }
 
 .descriptionHolder {
@@ -79,12 +81,13 @@ export default {
 
 .listingTitle {
   line-height: 1rem;
-  height: 1rem;
-  padding-bottom: 0.25rem;
+  max-height: 2rem;
+  padding-bottom: 0.5rem;
 }
 
 .listingDescription {
-  height: 6.5rem;
+  max-height: 80%;
+  line-height: 0.5rem;
   font-size: 0.5rem;
   overflow: hidden;
 }

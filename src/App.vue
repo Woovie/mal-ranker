@@ -17,7 +17,10 @@
       <a @click="showSearch" href="#" role="button" id="addNew">Add New</a>
     </div>
   </div>
-  <div id="tierContainer"></div>
+  <div id="tiers">
+    <div id="fauxnav"></div>
+    <div id="tierContainer"></div>
+  </div>
   <Search v-if="isShowingSearch" @chose-anime="choseAnime" @hide-search="hideSearch"></Search>
 </template>
 
@@ -34,7 +37,7 @@
       const tierContainer = document.querySelector('#tierContainer');
 
       for (let tier of this.tiers) {
-        if (!tier.name in this.rankings) {
+        if (!(tier.name in this.rankings)) {
           this.rankings[tier.name] = [];
         }
 
@@ -55,7 +58,7 @@
 
           tierContainer.appendChild(container);
 
-          console.log();
+          
 
           for (let id of this.rankings[tier.name]) {
             const animeDetails = await this.animeModule.getAnime(id);
@@ -194,15 +197,38 @@
     padding-right: var(--titlebar-pad);
     display: flex;
     align-items: center;
+    top: 0;
+    position: fixed;
+    box-sizing: border-box;
+    width: 100%;
   }
 
   #navRight {
     display: flex;
     align-items: center;
+    flex-shrink: 1;
   }
 
   #navLeft {
     flex-grow: 1;
+  }
+
+  #tiers {
+    height: 100%;
+    display: flex;
+    align-content: stretch;
+    flex-direction: column;
+    column-count: 1;
+  }
+
+  #fauxnav {
+    --titlebar-pad: 2rem;
+    height: 2rem;
+    min-height: 2rem;
+    padding-left: var(--titlebar-pad);
+    padding-right: var(--titlebar-pad);
+    display: flex;
+    align-items: center;
   }
 
   #addNew {
@@ -212,10 +238,6 @@
     border-radius: 0.25rem;
     font-size: 0.75rem;
     text-decoration: none;
-  }
-
-  body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   }
 
   #tierContainer {
@@ -235,10 +257,6 @@
     flex-grow: 1;
   }
 
-  .tierLabel {
-    display: flex;
-  }
-
   .smallCardHolder {
     width: 4rem;
     height: 6rem;
@@ -247,12 +265,9 @@
     justify-content: center;
     align-items: center;
     border-radius: 0.05rem;
-    margin-top: 0.25rem;
-    margin-bottom: 0.25rem;
-    margin-left: 0.25rem;
-    /* border: 1px white solid; */
+    padding: 0.5rem;
+    padding-right: 0;
     font-size: 40px;
-    transition: box-shadow 0.15s ease-in-out;
     transition: transform .2s;
   }
 
@@ -260,12 +275,17 @@
     transform: scale(1.5);
   }
 
-  .smallCardHolder:hover img{
-    box-shadow: hsla(40, 86%, 43%, 0.5) 0px 0.0625em 0.0625em, hsla(40, 86%, 43%, 0.5) 0px 0.125em 0.5em, hsla(40, 86%, 43%, 0.5) 0px 0px 0px 1px inset;
+  .tier {
+    display: flex;
+    flex-direction: row;
   }
 
-  .tier {
-      display: flex;
-      flex-direction: row;
-    }
+  .hoverCardContainer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: red;
+  }
 </style>
