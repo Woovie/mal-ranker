@@ -35,7 +35,7 @@ export default {
       animeDetails: {},
     }
   },
-  async mounted() {
+  async created() {
     const details = await this.animeModule.getAnime(this.id);
     this.animeDetails = details;
   }

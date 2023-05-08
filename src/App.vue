@@ -29,18 +29,29 @@
     async mounted() {
       const currentURL = new URL(window.location.href);
       const searchParams = currentURL.searchParams;
+
       const tierList = searchParams.get('tierList');
+      const tiers = searchParams.get('tiers');
+
       if (tierList) {
-        this.rankings = JSON.parse(Utf8.stringify(Base64url.parse(tierList)));
+        try {
+          this.rankings = JSON.parse(Utf8.stringify(Base64url.parse(tierList)));
+        } catch (error) {
+          console.log(`Tried loading bad tierList data: ${error}.\ntierList: ${tierList}\nPlease send this to @Woovie on Discord or woovie@woovie.net.`);
+        }
       }
-      
+
+      if (tiers) {
+        try {
+          this.tiers = JSON.parse(Utf8.stringify(Base64url.parse(tiers)));
+        } catch (error) {
+          console.log(`Tried loading bad tiers data: ${error}.\ntiers: ${tiers}\nPlease send this to @Woovie on Discord or woovie@woovie.net.`);
+        }
+      }
+
       const tierContainer = document.querySelector('#tierContainer');
 
       for (let tier of this.tiers) {
-        if (!(tier.name in this.rankings)) {
-          this.rankings[tier.name] = [];
-        }
-
         if (tier.render) {
           const modifiedTier = h(Tier, {
             onDroppedAnime: (animeDetails, tier) => this.droppedAnime(animeDetails, tier),
@@ -57,15 +68,22 @@
           tierInstance.mount(container);
 
           tierContainer.appendChild(container);
-
-          
-
-          for (let id of this.rankings[tier.name]) {
-            const animeDetails = await this.animeModule.getAnime(id);
-            const card = this.createCard(animeDetails);
-            document.querySelector(`#${tier.name}`).children[1].appendChild(card);
-          }
         }
+
+        if (tier.default) {
+          this.default = tier;
+        }
+      }
+
+      if (!this.default) {
+        console.log(`No default was provided! Here's the tiers: ${this.tiers}`)
+        this.default = this.tiers[0];
+      }
+
+      for (let id in this.rankings) {
+        const animeDetails = await this.animeModule.requestAnime(id);
+        const card = this.createCard(animeDetails);
+        tierContainer.children[this.rankings[id]].children[1].appendChild(card);
       }
     },
     data() {
@@ -73,49 +91,44 @@
         isShowingSearch: false,
         tiers: [
           {
-            name: 'S',
-            color: "hsl(120, 100%, 80%)",
-            render: true
+            "name": "S",
+            "color": "9f9",
+            "render": true
           },
           {
-            name: 'A',
-            color: "hsl(100, 100%, 80%)",
-            render: true
+            "name": "A",
+            "color": "bf9",
+            "render": true
           },
           {
-            name: 'B',
-            color: "hsl(80, 100%, 80%)",
-            render: true
+            "name": "B",
+            "color": "df9",
+            "render": true
           },
           {
-            name: 'C',
-            color: "hsl(60, 100%, 80%)",
-            render: true
+            "name": "C",
+            "color": "ff9",
+            "render": true
           },
           {
-            name: 'D',
-            color: "hsl(40, 100%, 80%)",
-            render: true
+            "name": "D",
+            "color": "fd9",
+            "render": true
           },
           {
-            name: 'F',
-            color: "hsl(20, 100%, 80%)",
-            render: true
+            "name": "F",
+            "color": "fc9",
+            "render": true
           },
           {
-            name: 'Unranked',
-            color: "hsl(120, 0%, 80%)",
-            render: true,
-            default: true
-          },
-          {
-            name: 'all',
-            render: false
+            "name": "Unranked",
+            "color": "ccc",
+            "render": true,
+            "default": true,
           },
         ],
         rankings: {},
         animeModule: AnimeManager,
-        anime: {},
       }
     },
     provide() {
@@ -129,22 +142,26 @@
           this.isShowingSearch = true;
         }
       },
+
       hideSearch() {
         if (this.isShowingSearch) {
           this.isShowingSearch = false;
         }
       },
+
       choseAnime(animeDetails) {
-        if(!this.rankings.all.includes(animeDetails.id)) {
-          this.rankings.Unranked.push(animeDetails.id);
-          this.rankings.all.push(animeDetails.id);
-          this.anime[animeDetails.id] = animeDetails;
+        if(!(animeDetails.id in this.rankings)) {
+          const tier = this.tiers.indexOf(this.default);
+          this.rankings[animeDetails.id] = tier;
+
           const smallCardInstance = this.createCard(animeDetails);
-          document.querySelector('#Unranked').children[1].appendChild(smallCardInstance);
+
+          tierContainer.children[tier].children[1].appendChild(smallCardInstance); // Mind melt
         } else {
           console.log("Error: anime already chosen");
         }
       },
+
       createCard(animeDetails) {
         const instance = createApp(SmallCard, {animeDetails});
 
@@ -155,18 +172,13 @@
         instance.mount(container);
         return container;
       },
+
       droppedAnime(animeDetails, tier) {
-        let foundRank = null;
-        for (let rank in this.rankings) {// this.rankings[rank]
-          if (rank === 'all') continue;
-          if (this.rankings[rank].includes(animeDetails.id)) {
-            this.rankings[rank].splice(this.rankings[rank].indexOf(animeDetails.id), 1);
-            this.rankings[tier].push(animeDetails.id);
-          }
-        }
+        this.rankings[animeDetails.id] = tier;
+
         const card = this.createCard(animeDetails);
         document.querySelector(`#card${animeDetails.id}`).remove();
-        document.querySelector(`#${tier}`).children[1].appendChild(card);
+        document.querySelector('#tierContainer').children[tier].children[1].appendChild(card);
 
         const currentURL = new URL(window.location.href);
         const searchParams = currentURL.searchParams;
@@ -248,15 +260,6 @@
     flex-grow: 1;
   }
 
-  .tier:last-child {
-    flex-grow: 1;
-    display: flex;
-  }
-
-  .tier:last-child, .tierLabel {
-    flex-grow: 1;
-  }
-
   .smallCardHolder {
     width: 4rem;
     height: 6rem;
@@ -266,7 +269,6 @@
     align-items: center;
     border-radius: 0.05rem;
     padding: 0.5rem;
-    padding-right: 0;
     font-size: 40px;
     transition: transform .2s;
   }

@@ -1,11 +1,8 @@
 <template>
-  <div :id="tier" class="tier">
-    <div class="tierLabel" :style="cssProps">
-      {{ tier }}
-    </div>
-    <div v-if="!hasChildNodes" @dragenter.prevent @dragover.prevent="draggedOver($event)" @drop.prevent="droppedOn($event)" class="tierDropzone"></div>
-    <div v-else @dragenter.prevent @dragover.prevent="draggedOver($event)" @drop.prevent="droppedOn($event)" class="tierDropzone">&nbsp;</div>
+  <div class="tierLabel" :style="cssProps">
+    {{ tier }}
   </div>
+  <div @dragenter.prevent @dragover.prevent="draggedOver($event)" @drop.prevent="droppedOn($event)" class="tierDropzone"></div>
 </template>
 
 <script>
@@ -18,7 +15,7 @@
     computed: {
       cssProps() {
         return {
-          '--bg-color': this.bgcol,
+          '--bg-color': `#${this.bgcol}`,
         }
       }
     },
@@ -26,7 +23,16 @@
       droppedOn(event) {
         if (event.target.classList.contains('tierDropzone')) {
           const animeDetails = event.dataTransfer.getData('animeDetails');
-          this.$emit('droppedAnime', JSON.parse(animeDetails), event.target.parentElement.id);
+          if (animeDetails.length > 0){
+            try {
+              const jsonData = JSON.parse(animeDetails);
+              this.$emit('droppedAnime', jsonData, [...document.querySelector("#tierContainer").children].indexOf(event.target.parentElement));
+            } catch (error) {
+              console.log(`Error interpreting dragged data: ${error}\nData: ${animeDetails}\nLength: ${animeDetails.length}`);
+            }
+          } else {
+            console.log(`Error handling drag event, animeDetails data transfer payload was empty.`);
+          }
         }
       },
       draggedOver(event) {
@@ -37,7 +43,10 @@
       hasChildNodes() {
         console.log(this);
       }
-    }
+    },
+    emits: [
+      "droppedAnime"
+    ]
   }
 </script>
 
@@ -45,11 +54,8 @@
   .dropzone {
     flex-grow: 1;
   }
-</style>
 
-<style scoped>
   .tierLabel {
-    background-color: var(--bg-color);
     font-weight: 500;
     color: black;
     flex-shrink: 1;
@@ -60,12 +66,19 @@
     min-height: 6rem;
     max-width: 4rem;
     flex-shrink: 1;
+    display: flex;
   }
 
   .tierDropzone{
     display: flex;
     flex-direction: row;
     flex-grow: 1;
-    height: 100%;
+    flex-wrap: wrap;
+  }
+</style>
+
+<style scoped>
+  .tierLabel {
+    background-color: var(--bg-color);
   }
 </style>

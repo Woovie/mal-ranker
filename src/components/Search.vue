@@ -1,7 +1,7 @@
 <template>
   <div @click="$emit('hideSearch')" id="searchBoxHolder">
     <div @click.stop id="searchBox">
-      <p>Click background to cancel</p>
+      <p>Click background or press escape to cancel search</p>
       <input @input="clearResultsDebounce()" aria-label="search" v-model="searchString" type="text" placeholder="Search for an anime" id="searchInput" />
       <div id="searchResults">
       </div>
@@ -27,13 +27,13 @@
     ],
     methods: {
         async searchForAnime() {
-            
             if (this.searchString.length >= 3) {
                 const results = await this.animeModule.searchAnime(this.searchString);
                 const responseHolder = document.querySelector("#searchResults");
                 for (let anime of results.data.data) {
                   anime = anime.node;
                   const container = document.createElement('div');
+                  container.classList.add('bigCardHolder');
                   const cardModified = h(BigCard, {
                     onChoseAnime: (animeDetails) => this.selectAnime(animeDetails),
                   });
@@ -69,17 +69,17 @@
     components: [
         BigCard,
     ],
-    components: { BigCard }
 }
 </script>
 
 <style>
 #searchBoxHolder {
-  position: absolute;
-  width: 100%;
-  height: 100%;
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
+  bottom: 0;
   display: flex;
-  align-items: center;
   justify-content: center;
   background-color: hsla(0, 0%, 0%, 0.3);
 }
@@ -104,7 +104,7 @@
 }
 
 #searchResults {
-  height: 24rem;
+  height: 80%;
   overflow-y: auto;
   overflow-x: clip;
   width: 100%;
@@ -130,21 +130,12 @@
 	background-color: white;
 }
 
-.searchListingHolder {
-  height: 8rem;
-  padding-bottom: 0.25rem;
-  padding-top: 0.25rem;
+.bigCardHolder {
+  margin-bottom: 0.25rem;
+  margin-top: 0.25rem;
 }
 
-.searchListingHolder:nth-child(odd) {
-  background-color: hsl(0, 0%, 100%, 0.1);
-}
-
-.searchListingHolder:nth-child(even) {
-  background-color: hsl(0, 0%, 100%, 0.2);
-}
-
-.searchListingHolder:hover {
+.bigCardHolder:hover {
   background-color: hsl(0, 0%, 100%, 0.3);
 }
 </style>
